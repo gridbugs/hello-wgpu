@@ -33,27 +33,21 @@ fn main() {
     let mut glyph_brush = wgpu_glyph::GlyphBrushBuilder::using_font_bytes(font_bytes)
         .build(&mut device, wgpu::TextureFormat::Bgra8UnormSrgb);
     let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
-    let mut shader_compiler = shaderc::Compiler::new().unwrap();
-    let vertex_shader = shader_compiler
-        .compile_into_spirv(
-            include_str!("./shader.vert"),
-            shaderc::ShaderKind::Vertex,
-            "shader.vert",
-            "main",
-            None,
-        )
-        .unwrap();
-    let fragment_shader = shader_compiler
-        .compile_into_spirv(
-            include_str!("./shader.frag"),
-            shaderc::ShaderKind::Fragment,
-            "shader.frag",
-            "main",
-            None,
-        )
-        .unwrap();
-    let vs_module = device.create_shader_module(vertex_shader.as_binary());
-    let fs_module = device.create_shader_module(fragment_shader.as_binary());
+    fn u8_slice_to_u32_vec(bytes: &[u8]) -> Vec<u32> {
+        let mut buffer = Vec::with_capacity(bytes.len() / 4);
+        let mut chunks = bytes.chunks_exact(4);
+        for chunk in &mut chunks {
+            let mut array: [u8; 4] = Default::default();
+            array.copy_from_slice(chunk);
+            buffer.push(u32::from_le_bytes(array));
+        }
+        assert!(chunks.remainder().is_empty());
+        buffer
+    }
+    let vs_module =
+        device.create_shader_module(&u8_slice_to_u32_vec(include_bytes!("./shader.vert.spv")));
+    let fs_module =
+        device.create_shader_module(&u8_slice_to_u32_vec(include_bytes!("./shader.frag.spv")));
     let triangle_data = &[
         (0.4, [1., 0., 0.]),
         (0.1, [0., 0.5, 0.]),
