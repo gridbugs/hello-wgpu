@@ -1,0 +1,13 @@
+[package]
+name = "hello-wgpu"
+version = "0.1.0"
+authors = ["Stephen Sherratt <stephen@sherra.tt>"]
+edition = "2018"
+
+[dependencies]
+env_logger = "0.7"
+log = "0.4"
+wgpu = "0.4"
+wgpu_glyph = "0.5"
+winit = "0.20.0-alpha4"
+shaderc = "0.6"
