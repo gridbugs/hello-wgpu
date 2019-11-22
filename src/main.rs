@@ -70,12 +70,26 @@ fn main() {
                 .map(|&(_size, _col)| Instance { _size, _col })
                 .collect::<Vec<_>>(),
         );
+    let uniform_buffer = device
+        .create_buffer_mapped::<u32>(1, wgpu::BufferUsage::UNIFORM)
+        .fill_from_slice(&[3]);
     let instance_size = ::std::mem::size_of::<Instance>();
-    let bind_group_layout =
-        device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor { bindings: &[] });
+    let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        bindings: &[wgpu::BindGroupLayoutBinding {
+            binding: 0,
+            visibility: wgpu::ShaderStage::VERTEX,
+            ty: wgpu::BindingType::UniformBuffer { dynamic: false },
+        }],
+    });
     let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
         layout: &bind_group_layout,
-        bindings: &[],
+        bindings: &[wgpu::Binding {
+            binding: 0,
+            resource: wgpu::BindingResource::Buffer {
+                buffer: &uniform_buffer,
+                range: 0..1,
+            },
+        }],
     });
     let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
         bind_group_layouts: &[&bind_group_layout],
